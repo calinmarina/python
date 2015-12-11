@@ -66,6 +66,8 @@ Req-started-unread-response    _CS_REQ_STARTED    <response_class>
 Req-sent-unread-response       _CS_REQ_SENT       <response_class>
 """
 
+import logging
+logger = logging.getLogger(__name__)
 import socket
 from sys import py3kwarning
 from urlparse import urlsplit
@@ -357,7 +359,7 @@ class HTTPResponse:
         # Initialize with Simple-Response defaults
         line = self.fp.readline()
         if self.debuglevel > 0:
-            print "reply:", repr(line)
+            logger.debug("reply:%s" % repr(line))
         if not line:
             # Presumably, the server closed the connection before
             # sending a valid response.
@@ -406,7 +408,7 @@ class HTTPResponse:
                 if not skip:
                     break
                 if self.debuglevel > 0:
-                    print "header:", skip
+                    logger.debug("header:%s"% skip)
 
         self.status = status
         self.reason = reason.strip()
@@ -429,7 +431,7 @@ class HTTPResponse:
         self.msg = HTTPMessage(self.fp, 0)
         if self.debuglevel > 0:
             for hdr in self.msg.headers:
-                print "header:", hdr,
+                logger.debug("header:%s"% hdr)
 
         # don't let the msg keep an fp
         self.msg.fp = None
@@ -716,11 +718,11 @@ class HTTPConnection:
         # NOTE: we DO propagate the error, though, because we cannot simply
         #       ignore the error... the caller will know if they can retry.
         if self.debuglevel > 0:
-            print "send:", repr(str)
+            logger.debug("send:%s"% repr(str))
         try:
             blocksize=8192
             if hasattr(str,'read') :
-                if self.debuglevel > 0: print "sendIng a read()able"
+                if self.debuglevel > 0: logger.debug("sendIng a read()able")
                 data=str.read(blocksize)
                 while data:
                     self.sock.sendall(data)
@@ -918,7 +920,7 @@ class HTTPConnection:
                 thelen = str(os.fstat(body.fileno()).st_size)
             except (AttributeError, OSError):
                 # Don't send a length if this failed
-                if self.debuglevel > 0: print "Cannot stat!!"
+                if self.debuglevel > 0: logger.debug("Cannot stat!!")
 
         if thelen is not None:
             self.putheader('Content-Length', thelen)
